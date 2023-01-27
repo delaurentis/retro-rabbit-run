@@ -1,0 +1,21 @@
+{
+  "name": "hello-world",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "loop-gifs": "./loop-gifs.sh",
+    "deploy": "npm run build; aws --region us-west-2 --profile vue-deployer s3 sync ./dist s3://retro-rabbit --delete"
+  },
+  "dependencies": {
+    "context-filter-polyfill": "^0.2.4",
+    "vue": "^3.2.25",
+    "vue-global-events": "^2.1.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^2.3.3",
+    "vite": "^2.9.9"
+  }
+}

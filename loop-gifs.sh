@@ -1,0 +1,2 @@
+cd public/original
+for i in *.gif; do ffmpeg -y -i "$i" -loop 0 -filter_complex "[0:v] scale=320:-1:flags=neighbor,crop=132:108:96:198,split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse" "../looping/$i"; done
