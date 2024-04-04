@@ -3,7 +3,7 @@
 <template>
     <span class="heart-container">
       <span class="heart">
-        <sprite :sprite="sprite" offset="0"/>
+        <sprite :sprite="sprite"/>
       </span>
     </span>
 </template>
@@ -42,10 +42,9 @@
 <style scoped>
   .heart-container {
     display: inline-block;
-    transform: scale(0.5);
-    width: 64px;  
-    margin-left: -20px;
-
+    transform: scale(0.75);
+    width: 96px;  
+    margin-left: -40px;
   }
   .heart {
     margin-top: -60px;

@@ -9,15 +9,20 @@
       :style="{
         'display': sprite.eaten ? 'none' : 'block',
         'background-color': sprite.color || 'rgba(0,0,0,0)',
-        'background-image': `url('/${sprite.type}-${sprite.state}.png')`,
+        'background-image': sprite.state !== 'none' ? `url('/${sprite.type}-${sprite.state || 'idle'}.png')` : undefined,
         'background-position': `${(Math.round(-1 * sprite.frame || 0)) * sprite.width}px`,
+        'opacity': sprite.opacity || 1, 
         'left': `${sprite.x - offset}px`,
-        'top': `${sprite.y}px`,
-        'z-index': `${sprite.z}`,
+        'top': `${sprite.y || 0}px`,
+        'z-index': `${sprite.z || 1}`,
         'width': `${sprite.width}px`,
         'height': `${sprite.height}px`,
+        'font-size': '30px',
+        'font-weight': '200',
+        'color': 'white',
+        'font-family': 'DotGothic16, VT323, Roboto, Helvetica, Arial, sans-serif',
       }"
-    />
+    >{{ this.sprite.text }}</div>
   </template>
   
   <!-- JavaScript --> 

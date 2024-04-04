@@ -2,7 +2,7 @@
 <!-- Structure: Where does everything go? -->
 <template>
     <div class="stage">
-      <sprite :sprite="hero" :offset="stageOffset"/>
+      <sprite :sprite="hero.sprite" :offset="stageOffset"/>
       <sprite  
         v-for="(sprite, index) in spritesInFrame" 
         :key="index"
@@ -11,6 +11,7 @@
       />
       <points :points="hero.points"/>
       <hearts :hearts="hero.hearts"/>
+      <crawl :story="story"/>
     </div>
   </template>
   
@@ -21,13 +22,15 @@
   import Hero from './Hero.vue'
   import Hearts from './Hearts.vue'
   import Points from './Points.vue'
+  import Crawl from './Crawl.vue'
   
   export default {
     components: {
       'sprite': Sprite,
       'hero': Hero,
       'hearts': Hearts,
-      'points': Points
+      'points': Points,
+      'crawl': Crawl,
     },
     props: {
       hero: Object,
@@ -35,6 +38,7 @@
         type: Array,
         default: [],
       },
+      story: Object,
     },
     data() {
       return {
@@ -42,7 +46,7 @@
     },
     computed: {
       stageOffset() {
-        return this.hero.x - 150
+        return this.hero.sprite.x - 50
       },
       spritesInFrame() {
         const offset = this.stageOffset
@@ -71,11 +75,10 @@
   .stage {
     display: block;
     position: relative;
-    background-color: #49d9fd;
     background-color: black;
     max-width: 640px;
     width: 100%;
-    height: 480px;
+    height: 540px;
     border: 1px solid #DADADA;
     overflow: hidden;
     user-select: none !important;

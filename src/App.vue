@@ -5,6 +5,7 @@
   <stage 
     :hero="hero"
     :sprites="allSprites" 
+    :story="story"
   />
   <button class="cover-button"></button>
   <div class="container">
@@ -19,7 +20,17 @@
 <!-- Functionality: What does it do? -->
 <script>
 import Stage from './components/Stage.vue'
-import { generalConstants, jumpConstants } from './data/constants.js'
+import { ToneGenerator } from './util/toneGenerator';
+import { collideHeroAndSprites } from './util/collider';
+import { peterRabbitParagraphs } from './data/stories'
+import { rabbit } from './data/heroes'
+import { textToMorseArray } from './util/morse'
+import { sprites as spriteLibrary } from './data/sprites'
+import { createStory, nextCharacterFromStoryExcept } from './util/story'
+import { generateTileForMorse, generateTileForCharacter } from './util/tile'
+import { createHero, advanceHero, jumpHeroAndDetectDash, askHeroToJump, injureHero, healHero, isHeroJumping } from './util/hero'
+import { danceSprite } from './util/sprite'
+import { tiles } from './data/tiles';
 
 // Options API
 export default {
@@ -30,60 +41,19 @@ export default {
   data() {
     return {
       gameOver: false,
-      spacePressed: false,
+      jumpButtonPressed: false,
       maxPixel: 0,
-      hero: { 
-        type: 'hero', 
-        state: 'running', 
-        jumpType: 'small', 
-        hearts: 3, 
-        carrots: 0, 
-        points: 0, 
-        frame: 0, 
-        framesPerTick: generalConstants.framesPerTick, 
-        stateTicks: 0, 
-        hurtTicks: 0, 
-        color: 'clear', 
-        x: 30, 
-        y: 220, 
-        baseY: 220, 
-        z: 1, 
-        width: 132, 
-        height: 108 
-      },
-      jumpConstants: jumpConstants,
+      toneGenerator: new ToneGenerator(),
+      lastCharacterIndex: undefined,
+      story: createStory(peterRabbitParagraphs),
+      hero: createHero(rabbit),
+      recentText: [],
+      tiles: [],
       terrain: [
-        { type: 'terrain', color: 'white', x: 0, y: 328, z: 0, width: 640, height: 2, minDistance: 0 },
+        { type: 'terrain', state: 'none', color: 'white', x: 0, y: 328, z: 0, width: 640, height: 2, minDistance: 0 },
       ],
       terrainLibrary: [
-        { type: 'terrain', color: 'white', y: 328, z: 0, width: 30, height: 2, minDistance: 0 },
-      ],
-      compendium: [
-        { type: 'carrot', state: 'idle', y: 280, z: 1, width: 40, height: 38, minDistance: 60 },
-        { type: 'carrot', state: 'idle', y: 240, z: 1, width: 40, height: 38, minDistance: 60 },
-        { type: 'carrot', state: 'idle', y: 200, z: 1, width: 40, height: 38, minDistance: 60 },
-        { type: 'carrot', state: 'idle', y: 160, z: 1, width: 40, height: 38, minDistance: 60 },
-        { type: 'carrot', state: 'idle', y: 120, z: 1, width: 40, height: 38, minDistance: 60 },
-        { type: 'rock40x52', state: 'idle', z: 1, width: 40, height: 52, yOffset: 0, minDistance: 220 },
-        { type: 'rock51x51', state: 'idle', z: 1, width: 51, height: 51, yOffset: 0, minDistance: 220 },
-        { type: 'rock57x54', state: 'idle', z: 1, width: 57, height: 54, yOffset: 0, minDistance: 220 },
-        { type: 'rock77x57', state: 'idle', z: 1, width: 77, height: 57, yOffset: 0, minDistance: 220 },
-        { type: 'rock177x88', state: 'idle', z: 1, width: 177, height: 88, yOffset: 6, minDistance: 320 },
-        { type: 'rock230x134', state: 'idle', z: 1, width: 230, height: 134, yOffset: 6, minDistance: 400 },
-        { type: 'rock172x58', state: 'idle', z: 1, width: 172, height: 58, yOffset: 0, minDistance: 320 },
-
-/*
-      { type: 'rock95x52', state: 'idle', z: 1, width: 95, height: 52, yOffset: 0, minDistance: 280 },
-        { type: 'rock101x52', state: 'idle', z: 1, width: 101, height: 52, yOffset: 0, minDistance: 280 },
-*/
-        /*
-        { type: 'rock322x188', state: 'idle', z: 1, width: 322, height: 188, minDistance: 220 },
-        { type: 'rock55x72', state: 'idle', z: 1, width: 55, height: 72, minDistance: 220 },
-        { type: 'rock71x71', state: 'idle', z: 1, width: 71, height: 71, minDistance: 250 },
-        { type: 'rock80x76', state: 'idle', z: 1, width: 80, height: 76, minDistance: 280  },
-        { type: 'rock107x80', state: 'idle', z: 1, width: 107, height: 80, minDistance: 290  },
-        { type: 'rock247x123', state: 'idle', z: 1, width: 247, height: 123, minDistance: 300  },
-        */
+        { type: 'terrain', state: 'none', color: 'white', y: 328, z: 0, width: 30, height: 2, minDistance: 0 },
       ],
       items: [
       ],
@@ -103,230 +73,98 @@ export default {
   methods: {
     gameLoop() {
 
-      // We always advance the state of the hero
-      this.hero.stateTicks += 1
-
-      // Always advance our current animation
-      this.hero.frame += this.hero.framesPerTick
-
-      // Always run forward
-      this.hero.x += generalConstants.speedInPixelsPerTick
+      // Move our hero forward
+      advanceHero(this.hero)
 
       // Check for collisions
       this.handleCollisions()
-
-      // Handle any injuries
-      this.handleInjuries()
 
       // Handle any jumps
       this.handleJumping()
 
       // Handle moving sprites
-      this.handleMovingSprites()
+      this.handleDancingSprites()
 
       // Generate sprites and terrain
       this.generateTerrain()
-      this.generateSprites()
+      //this.generateSprites()
+      this.generateTiles()
 
       // Keep running the animation loop
       window.requestAnimationFrame(this.gameLoop)
     },
     handleCollisions() {
 
-      // See how many collisions there are
-      const collisions = this.sprites.filter(sprite => 
-        (this.hero.x + this.hero.width > sprite.x && this.hero.x < sprite.x + sprite.width) && 
-        (this.hero.y + this.hero.height > sprite.y && this.hero.y < sprite.y + sprite.height)
-      ) 
+      // Get a list of sprites that the hero collides with
+      const confirmedCollisions = collideHeroAndSprites(this.hero.sprite, this.sprites, { debug: false })
+      confirmedCollisions.forEach(sprite => {
+        if ( !sprite.eaten ) {
 
-      // If there are collisions, handle them
-      const heroSpriteSheet = document.getElementById('hero-sprite-sheet')
-      heroSpriteSheet.src = `./hero-${this.hero.state}.png`
-      const snapshotCanvas = document.getElementById('collision-canvas')
-      const canvas = document.createElement('canvas')
-      canvas.width = 132
-      canvas.height = 108
-
-      const ctx = canvas.getContext('2d', { willReadFrequently: true })
-
-      // We'll have another sheet for the obstacles we encounter
-      const collidingSpriteSheet = document.getElementById('colliding-sprite-sheet')
-
-      // Draw each obstacle
-      const confirmedCollisions = collisions.filter(sprite => {
-        
-        // Clear the canvas and draw the current frame of our hero
-        ctx.clearRect(0, 0, 132, 108);
-        ctx.globalAlpha = 0.5
-        ctx.globalCompositeOperation = 'overlay'
-        ctx.drawImage(heroSpriteSheet, (Math.ceil(this.hero.frame) % 16) * 132, 0, 132, 108, 0, 0, 132, 108);
-        
-        // Draw the sprite we are testing for collision
-        collidingSpriteSheet.src = `./${sprite.type}-${sprite.state}.png`
-        if ( sprite.type !== 'carrot' ) {
-          //ctx.filter = 'grayscale(100%) brightness(35%) sepia(100%) hue-rotate(-48deg) saturate(100%) contrast(100)'
-        }
-        ctx.drawImage(collidingSpriteSheet, 
-          (Math.ceil(sprite.frame || 0)) * sprite.width, 
-          0, 
-          sprite.width, 
-          sprite.height, 
-          sprite.x - this.hero.x, 
-          sprite.y - this.hero.y, 
-          sprite.width, 
-          sprite.height);
-
-        // Count the total # of pixels overlapping
-        const imageData = ctx.getImageData(0, 0, 132, 108)
-        const pixels = imageData.data
-        let total = 0
-        this.maxPixel = 0
-        for (let i = 0; i < pixels.length; i += 4) {
-          if ( pixels[i + 3] > 160 && pixels[i + 3] < 255 ) {
-            total += 1
+          // If the sprite is edible and not already eaten, eat it up
+          if ( sprite.edible ) {
+            sprite.eaten = true
           }
-        }
 
-        // Clean things up for next time
-        ctx.filter = 'none'
-        ctx.globalAlpha = 100
-        collidingSpriteSheet.src = ''
+          // See what the health effect is
+          if ( sprite.nutrition > 0 ) {
 
-        // Render the snapshot to the debug canvas
-        //if ( total > 0 ) {
-          //snapshotCanvas.getContext('2d').clearRect(0, 0, 132, 108);
-          //snapshotCanvas.getContext('2d').drawImage(canvas, 0, 0, 132, 108, 0, 0, 132, 108)
-        //}
-
-        return total > 0
-      })
-
-      // Extract the value of the alpha channel from the pixel at the hero's feet
-
-      // Figure out which collisions are good vs bad
-      const harmful = confirmedCollisions.filter(sprite => sprite.type !== 'carrot')
-      const helpful = confirmedCollisions.filter(sprite => sprite.type === 'carrot')
-
-      // If they are helpful, hide the carrot when touched
-      helpful.forEach(sprite => { 
-        if (!sprite.eaten) {
-          sprite.eaten = true 
-          this.hero.hearts = Math.min(this.hero.hearts + 0.25, 3)
-          if ( this.hero.hearts >= 3 ) { 
-            this.hero.points += 1
+            // Positive health effect, yay!
+            healHero(this.hero, sprite)
+            this.toneGenerator.playHappy()
           }
-        }
-      })
-
-      // If they are harmful, make the character blink
-      if ( harmful.length > 0 ) {
-        if ( !this.hero.injured ) {
-          this.hero.injured = true
-          this.hero.hearts = Math.max(this.hero.hearts - 1, 0)
-        }
-        this.hero.injuredTicks = 50
-      }
-    },
-    handleInjuries() {
-      if ( this.hero.injuredTicks > 0 ) {
-        this.hero.injuredTicks -= 1
-        this.hero.injured = true
-      }
-      else {
-        this.hero.injured = false
-      }
-    },
-    handleJumping() {
-
-      // If they are jumping then change the Y
-      if ( this.hero.state === 'jumping' ) {
-
-        // Figure out which constants to use based on jump type
-        const constantsToUse = jumpConstants[this.hero.jumpType]
-        if ( this.hero.frame <= constantsToUse.frameCount ) {
-
-          // Adjust frame rate based on the current jump type
-          this.hero.framesPerTick = jumpConstants[this.hero.jumpType].framesPerTick
-
-          // Our X and Y value will change based on a pre-computed curve
-          this.hero.y = this.hero.baseY - (constantsToUse.yScale * constantsToUse.yCurve[Math.ceil(this.hero.frame)])
-          this.hero.x += (constantsToUse.xScale * constantsToUse.xCurve[Math.ceil(this.hero.frame)])
-
-          // See if space is still pressed
-          if ( this.spacePressed ) {
-            if ( this.hero.frame >= 5 && this.hero.frame <= 10 ) {
-              this.hero.jumpType = 'large'
+          else if ( sprite.nutrition < 0 ) {
+            // If we're not already hurt and blinking, then we will be now
+            // and we'll play a sound when it happens
+            if ( injureHero(this.hero, sprite) ) {
+              this.toneGenerator.playOuch()
             }
           }
         }
-        else {
-          this.hero.state = 'running'
-          this.hero.stateTicks = 0
-          this.hero.frame = 0
-          this.hero.y = this.hero.baseY
-          this.hero.framesPerTick = generalConstants.framesPerTick
-        }
-      }
-    },
-    handleMovingSprites() {
-      this.handleMoveCarrots()
-    },
-    handleMoveCarrots() {
-      this.sprites.filter(sprite => sprite.type === 'carrot').forEach(sprite => {
-        sprite.stateTicks = sprite.stateTicks || 0
-        sprite.stateTicks += 1
-        if ( sprite.stateTicks < 30 ) {
-          sprite.y -= 1
-        }
-        else if ( sprite.stateTicks < 60 ) {
-          sprite.y += 1
-        }
-        else {
-          sprite.stateTicks = 0
-        }
       })
     },
-    generateSprites() {
-      // Generate more sprites as needed
-      const lastSprite = this.sprites.slice(-1)[0] || { x: 0, width: 0, minDistance: 640 }
-      if ( (lastSprite.x - this.hero.x) < 640 ) {
-        const diceRoll = Math.floor(Math.random() * 10)
-        if ( diceRoll === 1 ) {
+    handleJumping() {
+      const isDashJustStarted = jumpHeroAndDetectDash(this.hero, this.jumpButtonPressed)
+      if ( isDashJustStarted ) {
+        this.toneGenerator.playDash()
+      }
+    },
+    handleDancingSprites() {
+      this.sprites.filter(sprite => sprite.dance !== undefined ).forEach(sprite => {
+        danceSprite(sprite)
+      })
+    },
+    generateTiles() {
+        
+      // ## How it works
+      // We move through one story character at a time
+      // And that turns into a set of morse code characters
+      // And for each of those, we have 1 tile generated
+      // And for each of those, we have N sprites generated
+      // 1 story -> N characters -> N morse characters -> 1 tile -> N sprites
 
-          // Compute which sprite we'll
-          const spriteRoll = Math.floor(Math.random() * this.compendium.length)
-          const randomSprite = this.compendium[spriteRoll]
+      // Get the last tile to determine where to start
+      const lastTile = this.tiles.slice(-1)[0] || { x: 0, width: 640 }
+      if ( (lastTile.x - this.hero.sprite.x) < 640 ) {
 
-          // Avoid two obstacles that are the same in a row (looks bad)
-          if ( randomSprite.type !== 'carrot' && 
-               this.obstacles.length > 0 && 
-               randomSprite.type === this.obstacles.slice(-1)[0].type ) {
-            return
-          }
+        // Get the next character from our story
+        const nextCharacter = nextCharacterFromStoryExcept(this.story, { skip: [',', '.', '!', '?', '-', '–', '=', '+' ] })
+        const letterTile = generateTileForCharacter(this.story.currentCharacter, lastTile.x + lastTile.width)
+        this.tiles.push(letterTile)
+        this.sprites = [...this.sprites, ...letterTile.sprites]
 
-          // Compute the target location
-          const distanceRoll = Math.floor(Math.random() * 100)
-          const targetX = lastSprite.x + lastSprite.width + lastSprite.minDistance + distanceRoll
-          const targetY = randomSprite.y || ((328 - randomSprite.height) + (randomSprite.yOffset || 0))
-          
-          // Customize and add the sprite to our list
-          const customizedSprite = {...randomSprite, x: targetX, y: targetY}
-          this.sprites = [...this.sprites, customizedSprite]
-
-          // Store obtacles and items separately for reference
-          if ( customizedSprite.type === 'carrot' ) {
-            this.items = [...this.items, customizedSprite]
-          }
-          else {
-            this.obstacles = [...this.obstacles, customizedSprite]
-          }
-        }
+        // Translate to morse code, and add all those tiles now too
+        const morseArray = textToMorseArray(nextCharacter)
+        morseArray.forEach(morseCharacter => {
+          const newTile = generateTileForMorse(morseCharacter, this.tiles.slice(-1)[0].x + this.tiles.slice(-1)[0].width)
+          this.tiles.push(newTile)
+          this.sprites = [...this.sprites, ...newTile.sprites]
+        })
       }
     },
     generateTerrain() {
       // Generate more terrain as needed
       const lastTerrain = this.terrain.slice(-1)[0] || { x: 0, width: 0, minDistance: 0 }
-      if ((lastTerrain.x - this.hero.x) < 640 ) {
+      if ((lastTerrain.x - this.hero.sprite.x) < 640 ) {
         const lastTerrain = this.terrain.slice(-1)[0]
         const spriteRoll = Math.floor(Math.random() * this.terrainLibrary.length)
         const randomSprite = {...this.terrainLibrary[spriteRoll], x: lastTerrain.x + lastTerrain.width}
@@ -336,33 +174,21 @@ export default {
     doCommand(e) {
       let cmd = String.fromCharCode(e.keyCode).toLowerCase();
       if ( cmd === ' ') {
-        this.onSpacePress()
+        this.onJumpPress()
       }
     },
-    onSpacePress() {
-      this.spacePressed = true
-      if ( this.hero.state === 'running' ) {
-        this.hero.state = 'jumping'
-        this.hero.jumpType = 'small'
-        this.hero.stateTicks = 0
-        this.hero.frame = 0
-        this.hero.framesPerTick = jumpConstants[this.hero.jumpType].framesPerTick
-        this.hero.points += 1
-      } 
-      else if ( this.hero.state === 'jumping' ) {
+    onJumpPress() {
+      this.jumpButtonPressed = true
+      askHeroToJump(this.hero)
+    },
+    onJumpRelease() {
+      this.jumpButtonPressed = false
 
-        // Allow them to shortcut the end of the jumping if they press again at the end
-        if ( this.hero.frame >= 17 ) {
-          this.hero.state = 'jumping'
-          this.hero.jumpType = 'small'
-          this.hero.stateTicks = 0
-          this.hero.frame = 0
-          this.hero.framesPerTick = jumpConstants[this.hero.jumpType].framesPerTick
-        }
+      // We know we're just doing a short jump when the space bar is released
+      // and the sound will play right away after the release, so will feel right
+      if ( isHeroJumping(this.hero, 'small') ) {
+        this.toneGenerator.playDot()
       }
-    },
-    onSpaceRelease() {
-      this.spacePressed = false
     },
     onGameOver() {
       this.gameOver = true
@@ -372,21 +198,21 @@ export default {
     }
   },
   created() {
-    window.addEventListener('keydown', this.onSpacePress);
-    window.addEventListener('keyup', this.onSpaceRelease);
-    window.addEventListener('touchstart', this.onSpacePress);
-    window.addEventListener('touchend', this.onSpaceRelease);
-    window.addEventListener('mousedown', this.onSpacePress);
-    window.addEventListener('mouseup', this.onSpaceRelease);
+    window.addEventListener('keydown', this.onJumpPress);
+    window.addEventListener('keyup', this.onJumpRelease);
+    window.addEventListener('touchstart', this.onJumpPress);
+    window.addEventListener('touchend', this.onJumpRelease);
+    window.addEventListener('mousedown', this.onJumpPress);
+    window.addEventListener('mouseup', this.onJumpRelease);
     document.addEventListener('gesturestart', this.preventGesture);
   },
   destroyed() {
-    window.removeEventListener('keydown', this.onSpacePress);
-    window.removeEventListener('keyup', this.onSpaceRelease);
-    window.removeEventListener('touchstart', this.onSpacePress);
-    window.removeEventListener('touchend', this.onSpaceRelease);
-    window.removeEventListener('mousedown', this.onSpacePress);
-    window.removeEventListener('mouseup', this.onSpaceRelease);
+    window.removeEventListener('keydown', this.onJumpPress);
+    window.removeEventListener('keyup', this.onJumpRelease);
+    window.removeEventListener('touchstart', this.onJumpPress);
+    window.removeEventListener('touchend', this.onJumpRelease);
+    window.removeEventListener('mousedown', this.onJumpPress);
+    window.removeEventListener('mouseup', this.onJumpRelease);
     document.removeEventListener('gesturestart', this.preventGesture);
   },
   mounted() {
@@ -437,7 +263,7 @@ div, span, .container {
 input[type="button"]{ touch-action: manipulation; }
 
 #app {
-  font-family: VT323, Roboto, Helvetica, Arial, sans-serif;
+  font-family: DotGothic16, VT323, Roboto, Helvetica, Arial, sans-serif;
   text-align: center;
   display: flex;
   flex-direction: column;
