@@ -32,8 +32,8 @@
   <style scoped>
   .hearts {
     position: absolute;
-    top: 10px;
-    right: 20px;
+    top: 15px;
+    right: 5px;
     height: 40px;
     white-space: nowrap;
   }

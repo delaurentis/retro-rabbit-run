@@ -25,14 +25,14 @@
 <style scoped>
   .point-container {
     position: absolute;
-    top: 13px;
-    left: 20px;
+    top: 8px;
+    left: 16px;
   }
 
   .points {
     color: white;
     font-family: DotGothic16, VT323, Roboto, Helvetica, Arial, sans-serif;
-    font-size: 24px;
+    font-size: 30px;
     font-weight: 200;
   }
   </style>
