@@ -3,7 +3,7 @@ import { jumps } from '../data/jumps'
 import { generalConstants } from '../data/constants'
 
 export const createHero = (hero: Hero): Hero => {
-  return { ...hero }
+  return { ...hero, sprite: { ...hero.sprite } }
 }
 
 export const advanceHero = (hero: Hero): void => {
@@ -30,21 +30,36 @@ export const advanceHero = (hero: Hero): void => {
 
 // Handle healing hero from collision with a helpful sprite
 export const healHero = (hero: Hero, sprite: Sprite): void => {
-  hero.hearts += sprite.nutrition || 0
+  // They can't heal if dead
+  if ( hero.hearts > 0 ) {
+    hero.hearts = Math.min(3, hero.hearts + (sprite.nutrition || 0))
+    hero.points += 1
+  }
 }
 
 // Handle inury to hero from collision with a harmful sprite
 export const injureHero = (hero: Hero, sprite: Sprite): boolean => {
   // If already injured, don't injure again
-  if ( hero.sprite.injured ) {
+  if ( hero.sprite.injured || hero.hearts <= 0 ) {
     return false
   }
   else {
     hero.sprite.injured = true
     hero.sprite.injuredTicks = 150
     hero.hearts = Math.max(hero.hearts + (sprite.nutrition || 0), 0)
+
+    // Dim the character if they died
+    if ( hero.hearts <= 0 ) {
+      hero.sprite.opacity = 0.25
+    }
+
+    // Yes, an injury took place (used to make a sound)
     return true
   }
+}
+
+export const isHeroAlive = (hero: Hero): boolean => {
+  return hero.hearts > 0
 }
 
 // Request that the hero jumps.  They might not if they are already jumping.

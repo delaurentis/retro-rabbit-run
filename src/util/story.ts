@@ -1,8 +1,12 @@
 import { Story } from '../data/types'
+import { stories } from '../data/stories'
 import { textToMorseArray } from './morse'
 
-export const createStory = (paragraphs: string[]): Story => {
+export const createStory = (): Story => {
   
+  // Randomly pick a story from the list
+  const paragraphs: string[] = stories[Math.floor(Math.random() * stories.length)]
+
   // Word wrap the lines into shorter lines
   const lines = paragraphs.flatMap(paragraph => wordWrap(paragraph, 32))
 

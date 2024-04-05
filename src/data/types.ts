@@ -20,6 +20,7 @@ export type Sprite = {
   dance?: SpriteDance
   text?: string
   fontSize?: number
+  actionToTrigger?: string
 };
 
 // Define a single step in the dance of a sprite
@@ -51,6 +52,7 @@ export type SpriteDef = {
   color?: string
   opacity?: number
   dance?: SpriteDance
+  actionToTrigger?: string
 };
 
 // Our library of sprites
@@ -69,6 +71,7 @@ export type SpriteRef = {
   opacity?: number
   frame?: number 
   state?: string
+  actionToTrigger?: string
 };
 
 export type Story = {
@@ -109,6 +112,7 @@ export type TileLibrary = {
   '.': TileSet;
   '-': TileSet;
   ' ': TileSet;
+  '💀': TileSet;
 }
 
 // Constants for realistic jumping

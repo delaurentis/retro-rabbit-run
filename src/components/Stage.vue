@@ -46,7 +46,10 @@
     },
     computed: {
       stageOffset() {
-        return this.hero.sprite.x - 50
+        const mobileOffset = 50
+        const desktopOffset = 150
+        const isMobile = (window.innerWidth <= 480)
+        return this.hero.sprite.x - (isMobile ? mobileOffset : desktopOffset)
       },
       spritesInFrame() {
         const offset = this.stageOffset

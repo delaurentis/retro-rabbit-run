@@ -5,16 +5,14 @@ export class ToneGenerator {
   
     constructor() {
         this.audioCtx = new (window.AudioContext || window['webkitAudioContext'])()
-        this.dotDuration = 0.1 // seconds
-        this.dashDuration = 0.3 // seconds
     }
   
     playDot() {
-        this.playSound(750, this.dotDuration, 0.25)
+        this.playTaperedSound(700, 0.125, 0.5, 0.125)
     }
   
     playDash() {
-        this.playSound(750, this.dashDuration, 0.25)
+        this.playTaperedSound(700, 0.3, 0.3, 0.8)
     }
   
     // Play a sequence of notes
@@ -41,14 +39,14 @@ export class ToneGenerator {
     // Play a sound when we get a good item
     playHappy() {
         const notes = [ 
-            { frequency: 523.25, duration: 0.15, volume: 0.1}, // C5
-            { frequency: 587.33, duration: 0.05, volume: 0.05 }, // D5
-            { frequency: 659.25, duration: 0.05, volume: 0.05 }, // E5
-            { frequency: 698.46, duration: 0.05, volume: 0.05 }, // F5
-            { frequency: 783.99, duration: 0.05, volume: 0.05 }, // G5
-            { frequency: 880.00, duration: 0.05, volume: 0.05 }, // A5
-            { frequency: 987.77, duration: 0.05, volume: 0.05 }, // B5
-            { frequency: 1046.50, duration: 0.2, volume: 0.05 }  // C6, held longer for completion
+            { frequency: 523.25, duration: 0.15, volume: 0.075}, // C5
+            { frequency: 587.33, duration: 0.05, volume: 0.025 }, // D5
+            { frequency: 659.25, duration: 0.05, volume: 0.025 }, // E5
+            { frequency: 698.46, duration: 0.05, volume: 0.025 }, // F5
+            { frequency: 783.99, duration: 0.05, volume: 0.025 }, // G5
+            { frequency: 880.00, duration: 0.05, volume: 0.025 }, // A5
+            { frequency: 987.77, duration: 0.05, volume: 0.025 }, // B5
+            { frequency: 1046.50, duration: 0.2, volume: 0.025 }  // C6, held longer for completion
         ]
         this.playSequence(notes)
     }
@@ -69,6 +67,25 @@ export class ToneGenerator {
             }, i * 150)
         }
     }
+
+    playDeath() {
+        // Play a more dramatic sound when the character dies
+        const startFrequency = 250 // Start at a lower base frequency for a more somber tone
+        const endFrequency = 100 // End at an even lower frequency for dramatic effect
+        const duration = 0.1 // Longer duration for each tone
+        const volume = 0.8 // Start louder but decrease significantly
+        const repeats = 12 // Number of tones to play
+
+        for (let i = 0; i < repeats; i++) {
+            setTimeout(() => {
+                // Calculate the current frequency to gradually decrease over time
+                const frequency = startFrequency + (endFrequency - startFrequency) * (i / repeats)
+                // Calculate volume to decrease more dramatically over time, emphasizing the finality
+                const currentVolume = volume * Math.pow((repeats - i) / repeats, 2)
+                this.playTaperedSound(frequency, duration, currentVolume, duration * 2)
+            }, i * 150) // Increase the delay to spread out the sound effect
+        }
+    }
   
     // Play the sound with given frequency, duration, and volume
     playSound(frequency: number, duration: number, volume: number) {
@@ -84,6 +101,33 @@ export class ToneGenerator {
         oscillator.start(this.audioCtx.currentTime)
         oscillator.stop(this.audioCtx.currentTime + duration)
     }
+
+    playTaperedSound(frequency: number, duration: number, volume: number, fadeAt: number) {
+        // Create oscillator node
+        var oscillator = this.audioCtx.createOscillator()
+        oscillator.type = 'sine' // sine wave
+        oscillator.frequency.setValueAtTime(frequency, this.audioCtx.currentTime) // frequency in Hz
+    
+        // Create gain (volume) node and shape the volume to taper off at the end
+        var gainNode = this.audioCtx.createGain()
+        
+        // Start with full volume
+        gainNode.gain.setValueAtTime(volume, this.audioCtx.currentTime); 
+        
+        // Begin tapering off the volume at the specified point
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + fadeAt)
+        
+        // Connect oscillator to gain node and gain node to the destination
+        oscillator.connect(gainNode)
+        gainNode.connect(this.audioCtx.destination)
+        
+        // Start the oscillator
+        oscillator.start(this.audioCtx.currentTime)
+        
+        // Stop the oscillator after the duration
+        oscillator.stop(this.audioCtx.currentTime + duration)
+    }
+    
   
     // Play shaped white noise for a given duration and volume
     // Can be used to create percussive sounds
@@ -94,7 +138,7 @@ export class ToneGenerator {
         const frameCount = sampleRate * duration
         const myArrayBuffer = this.audioCtx.createBuffer(2, frameCount, sampleRate)
     
-        // Fill the buffer with white noise;
+        // Fill the buffer with white noise
         // just random values between -1.0 and 1.0
         for (let channel = 0; channel < myArrayBuffer.numberOfChannels; channel++) {
             // This gives us the actual array that contains the data

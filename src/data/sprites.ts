@@ -13,4 +13,5 @@ export const sprites: SpriteLibrary = {
   rock172x58: { state: 'idle', width: 172, height: 58, yFromGround: 0, nutrition: -1 },
   rock177x88: { state: 'idle', width: 177, height: 88, yFromGround: 6, nutrition: -1 },
   rock230x134: { state: 'idle', width: 230, height: 134, yFromGround: 6, nutrition: -1 },
+  grave: { state: 'idle', width: 117, height: 141, yFromGround: 4, actionToTrigger: 'restart' },
 }

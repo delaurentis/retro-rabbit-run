@@ -22,13 +22,12 @@
 import Stage from './components/Stage.vue'
 import { ToneGenerator } from './util/toneGenerator';
 import { collideHeroAndSprites } from './util/collider';
-import { peterRabbitParagraphs } from './data/stories'
 import { rabbit } from './data/heroes'
 import { textToMorseArray } from './util/morse'
-import { sprites as spriteLibrary } from './data/sprites'
+import { terrainLibrary } from './data/terrain'
 import { createStory, nextCharacterFromStoryExcept } from './util/story'
 import { generateTileForMorse, generateTileForCharacter } from './util/tile'
-import { createHero, advanceHero, jumpHeroAndDetectDash, askHeroToJump, injureHero, healHero, isHeroJumping } from './util/hero'
+import { createHero, advanceHero, jumpHeroAndDetectDash, askHeroToJump, injureHero, healHero, isHeroJumping, isHeroAlive } from './util/hero'
 import { danceSprite } from './util/sprite'
 import { tiles } from './data/tiles';
 
@@ -42,33 +41,18 @@ export default {
     return {
       gameOver: false,
       jumpButtonPressed: false,
-      maxPixel: 0,
       toneGenerator: new ToneGenerator(),
-      lastCharacterIndex: undefined,
-      story: createStory(peterRabbitParagraphs),
+      story: createStory(),
       hero: createHero(rabbit),
-      recentText: [],
       tiles: [],
-      terrain: [
-        { type: 'terrain', state: 'none', color: 'white', x: 0, y: 328, z: 0, width: 640, height: 2, minDistance: 0 },
-      ],
-      terrainLibrary: [
-        { type: 'terrain', state: 'none', color: 'white', y: 328, z: 0, width: 30, height: 2, minDistance: 0 },
-      ],
-      items: [
-      ],
-      obstacles: [
-
-      ],
-      sprites: [
-
-      ]
+      sprites: [],
+      terrain: [terrainLibrary.terrain]
     }
   },
   computed: {
     allSprites() {
       return [...this.sprites, ...this.terrain]      
-    }
+    },
   },
   methods: {
     gameLoop() {
@@ -87,8 +71,10 @@ export default {
 
       // Generate sprites and terrain
       this.generateTerrain()
-      //this.generateSprites()
       this.generateTiles()
+
+      // Prune sprites and tiles
+      this.pruneTiles()
 
       // Keep running the animation loop
       window.requestAnimationFrame(this.gameLoop)
@@ -98,7 +84,7 @@ export default {
       // Get a list of sprites that the hero collides with
       const confirmedCollisions = collideHeroAndSprites(this.hero.sprite, this.sprites, { debug: false })
       confirmedCollisions.forEach(sprite => {
-        if ( !sprite.eaten ) {
+        if ( !sprite.eaten && isHeroAlive(this.hero) ) {
 
           // If the sprite is edible and not already eaten, eat it up
           if ( sprite.edible ) {
@@ -116,9 +102,20 @@ export default {
             // If we're not already hurt and blinking, then we will be now
             // and we'll play a sound when it happens
             if ( injureHero(this.hero, sprite) ) {
-              this.toneGenerator.playOuch()
+              if ( isHeroAlive(this.hero) ) {
+                this.toneGenerator.playOuch()
+              }
+              else {
+                this.toneGenerator.playDeath()
+                this.onGameOver()
+              }
             }
           }
+        }
+
+        // Are we triggering any actions
+        if ( sprite.actionToTrigger === 'restart') {
+          this.onRestart()
         }
       })
     },
@@ -146,29 +143,61 @@ export default {
       const lastTile = this.tiles.slice(-1)[0] || { x: 0, width: 640 }
       if ( (lastTile.x - this.hero.sprite.x) < 640 ) {
 
-        // Get the next character from our story
-        const nextCharacter = nextCharacterFromStoryExcept(this.story, { skip: [',', '.', '!', '?', '-', '–', '=', '+' ] })
-        const letterTile = generateTileForCharacter(this.story.currentCharacter, lastTile.x + lastTile.width)
-        this.tiles.push(letterTile)
-        this.sprites = [...this.sprites, ...letterTile.sprites]
+        // Do letters and morse code tiles if we're alive
+        if ( isHeroAlive(this.hero) ) {
 
-        // Translate to morse code, and add all those tiles now too
-        const morseArray = textToMorseArray(nextCharacter)
-        morseArray.forEach(morseCharacter => {
-          const newTile = generateTileForMorse(morseCharacter, this.tiles.slice(-1)[0].x + this.tiles.slice(-1)[0].width)
+          // Get the next character from our story
+          const nextCharacter = nextCharacterFromStoryExcept(this.story, { skip: [',', '.', '!', '?', '-', '–', '=', '+' ] })
+          if ( nextCharacter === undefined ) {
+
+            // If we reach the end, restart the game
+            // In the future it would be great to add a special tile for winning
+            // like a trophy or something
+            this.onRestart()
+            return
+          }
+
+          // Add the letter tile
+          const letterTile = generateTileForCharacter(this.story.currentCharacter, lastTile.x + lastTile.width)
+          this.tiles.push(letterTile)
+          this.sprites = [...this.sprites, ...letterTile.sprites]
+
+          // Translate to morse code, and add all those tiles now too
+          const morseArray = textToMorseArray(nextCharacter)
+          morseArray.forEach(morseCharacter => {
+            const newTile = generateTileForMorse(morseCharacter, this.tiles.slice(-1)[0].x + this.tiles.slice(-1)[0].width)
+            this.tiles.push(newTile)
+            this.sprites = [...this.sprites, ...newTile.sprites]
+          })
+        }
+        else {
+          // If we're dead, we'll just keep generating tiles with gravestones
+          const newTile = generateTileForMorse('💀', this.tiles.slice(-1)[0].x + this.tiles.slice(-1)[0].width)
           this.tiles.push(newTile)
           this.sprites = [...this.sprites, ...newTile.sprites]
-        })
+        }
       }
     },
+    pruneTiles() {
+      
+      // Prune tiles
+      this.tiles = this.tiles.filter(tile => tile.x > this.hero.sprite.x - 1000)
+
+      // Prune sprites
+      this.sprites = this.sprites.filter(sprite => sprite.x > this.hero.sprite.x - 1000)
+      
+      // Prune terrain
+      this.terrain = this.terrain.filter(terrain => terrain.x > this.hero.sprite.x - 1000)
+    },
     generateTerrain() {
-      // Generate more terrain as needed
+      // Generate more terrain as needed.  Note: this might feel like overkill for a simple
+      // line that the character stands on, but in the future, would love to add different heights
+      // and varied terrain for the player to keep it interesting
       const lastTerrain = this.terrain.slice(-1)[0] || { x: 0, width: 0, minDistance: 0 }
       if ((lastTerrain.x - this.hero.sprite.x) < 640 ) {
         const lastTerrain = this.terrain.slice(-1)[0]
-        const spriteRoll = Math.floor(Math.random() * this.terrainLibrary.length)
-        const randomSprite = {...this.terrainLibrary[spriteRoll], x: lastTerrain.x + lastTerrain.width}
-        this.terrain = [...this.terrain, randomSprite]
+        const terrainSprite = {...terrainLibrary.terrain, x: lastTerrain.x + lastTerrain.width}
+        this.terrain = [...this.terrain, terrainSprite]
       }
     },
     doCommand(e) {
@@ -192,6 +221,19 @@ export default {
     },
     onGameOver() {
       this.gameOver = true
+
+      // Clear as many upcoming tiles as we can that already exist
+      this.tiles = this.tiles.filter(tile => tile.x < this.hero.sprite.x + 640)
+      this.sprites = this.sprites.filter(sprite => sprite.x < this.hero.sprite.x + 640)
+
+    },
+    onRestart() {
+      this.gameOver = false
+      this.hero = createHero(rabbit)
+      this.story = createStory()
+      this.tiles = []
+      this.sprites = []
+      this.terrain = [terrainLibrary.terrain]
     },
     preventGesture(e) {
       e.preventDefault()
