@@ -1,22 +1,23 @@
 <!-- HTML --> 
 <!-- Structure: Where does everything go? -->
 <template>
-    <span class="point-container">
-      <span class="points">
-        {{ points }}
-      </span>
+  <span class="point-container">
+    <span class="points">
+      {{ points }}
     </span>
+  </span>
 </template>
   
 <!-- JavaScript --> 
 <!-- Functionality: What does it do? -->
-<script>
+<script lang="ts">
+  import { defineComponent } from 'vue'
   
-  export default {
+  export default defineComponent({
     props: {
-      points: Number
+      points: { type: Number, required: true }
     }
-  }
+  })
   
 </script>
   
@@ -35,4 +36,4 @@
     font-size: 30px;
     font-weight: 200;
   }
-  </style>
+</style>

@@ -1,17 +1,35 @@
-# Rabbit Run
+# Retro Rabbit Run
 
-# GIFs
+![](https://retrorabbit.games/rabbit-running.gif)
+
+Retro rabbit is on the run, in this fun side-scroller that teaches morse code.  The game world is automatically generated based on text from Retro's favorite public domain works about rabbits, which you get to read as you progress through the level.
+
+Created by a father daughter team, the game is designed to be played on desktop, iPad, and mobile phones.
+
+Tap the screen or any key quickly to make Retro hop (dot), or hold the screen for a longer jump (dash).  If you turn on your audio, you'll hear morse code being played as Retro hops.  Each letter of the public domain story is translated into Morse code, which guides Retro's path in avoiding obstacles and catching carrots.
+
+## Play the Game
+
+You can play the game at https://retrorabbit.games
+
+## Run the Game Locally
+
+First, clone this repo locally, then...
 
 ```
- ffmpeg -i rabbit-run-loop.gif -loop 0 -filter_complex "[0:v] scale=320:-1:flags=lanczos,split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse" rabbit-run-infinite.gif
-
-  ffmpeg -i rabbit-start-run.gif -loop 0 -filter_complex "[0:v] scale=320:-1:flags=lanczos,split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse" rabbit-run-slow-infinite.gif
-
-ffmpeg -i rabbit-jump.gif -loop 0 -filter_complex "[0:v] scale=320:-1:flags=lanczos,split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse" rabbit-jump-infinite.gif
-
-ffmpeg -i hearts.gif -filter_complex "[0:v] scale=128:-1:flags=neighbor,split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse" fixed-rabbit-run-loop-infinite.gif
-
-
+npm install
+npm run dev
 ```
 
-ffmpeg -y -i hearts.gif -filter_complex "[0:v] scale=128:-1:flags=neighbor,crop=80:100:30:18,split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse" hearts-small.gif
+## Under the Hood
+
+The game runs on a simple sprite engine built in TypeScript and Vue.js, and features tile-based level generation.  The engine can be customized with a different hero, or different obstacles, enemies, or power ups.
+
+## Credits
+
+Code by Pete DeLaurentis
+
+Artwork by Sofia DeLaurentis
+
+Stories by Beatrix Potter, Margery Williams, and Lewis Carroll
+

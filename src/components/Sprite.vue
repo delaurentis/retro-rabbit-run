@@ -9,7 +9,7 @@
       :style="{
         'display': sprite.eaten ? 'none' : 'block',
         'background-color': sprite.color || 'rgba(0,0,0,0)',
-        'background-image': sprite.state !== 'none' ? `url('/${sprite.type}-${sprite.state || 'idle'}.png')` : undefined,
+        'background-image': sprite.image ? `url('/${sprite.image}-${sprite.state || 'idle'}.png')` : undefined,
         'background-position': `${(Math.round(-1 * sprite.frame || 0)) * sprite.width}px`,
         'opacity': sprite.opacity || 1, 
         'left': `${sprite.x - offset}px`,
@@ -25,22 +25,24 @@
     >{{ this.sprite.text }}</div>
   </template>
   
-  <!-- JavaScript --> 
-  <!-- Functionality: What does it do? -->
-  <script>
+<!-- JavaScript --> 
+<!-- Functionality: What does it do? -->
+<script lang="ts">
+  import { defineComponent, PropType } from 'vue'
+  import { Sprite as SpriteType } from '../data/types'
   
-  export default {
+  export default defineComponent({
     props: {
-      sprite: Object,
-      offset: Number
+      sprite: { type: Object as PropType<SpriteType>, required: true },
+      offset: { type: Number, required: false }
     },
-  }
+  })
   
-  </script>
+</script>
   
-  <!-- CSS --> 
-  <!-- Style: How does it look? -->
-  <style scoped>
+<!-- CSS --> 
+<!-- Style: How does it look? -->
+<style scoped>
   
   .sprite {
     position: absolute;
@@ -78,5 +80,4 @@
     }
   }
 
-
-  </style>
+</style>

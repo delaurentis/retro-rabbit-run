@@ -1,62 +1,70 @@
 <template>
-    <div class="static-crawl-container">
-      <div class="static-crawl-content">
-        <!-- Display only the last two lines -->
-        <div v-if="lines.length > 2">{{ lines.slice(-3, -1)[0] }}</div>
-        <div v-if="lines.length > 1">{{ lines.slice(-2, -1)[0] }}</div>
-        <div v-if="lines.length > 0">
-          <span>{{ lastLineWrittenPortion }}</span>
-          <span class="current-portion">{{ currentPortion }}</span>
-          <span class="unwritten-portion">{{ lastLineUnwrittenPortion }}</span>
-        </div>
+  <div class="static-crawl-container">
+    <div class="static-crawl-content">
+      <!-- Display only the last two lines -->
+      <div v-if="lines.length > 2">{{ lines.slice(-3, -1)[0] }}</div>
+      <div v-if="lines.length > 1">{{ lines.slice(-2, -1)[0] }}</div>
+      <div v-if="lines.length > 0">
+        <span>{{ lastLineWrittenPortion }}</span>
+        <span class="unwritten-portion">{{ lastLineUnwrittenPortion }}</span>
       </div>
     </div>
-  </template>
+  </div>
+</template>
   
-  <script>
-  export default {
+<script lang="ts">
+  import { defineComponent, PropType } from 'vue'
+  import { Story as StoryType } from '../data/types'
+
+  export default defineComponent({
     name: 'Crawl',
     props: {
-      story: Object,
+      story: { type: Object as PropType<StoryType>, required: true },
     },
     computed: {
-      lines() {
+      lines(): string[] {
         return this.story.lines.slice(0, this.story.lineIndex + 1)
       },
-      characterIndex() {
+      characterIndex(): number {
         return this.story.characterIndex
       },
-      lineIndex() {
+      lineIndex(): number {
         return this.story.lineIndex
       },
-      lastLineWrittenPortion() {
+      lastLineWrittenPortion(): string {
         const lastLine = this.lines.slice(-1)[0]
-        const portion = lastLine.slice(0, Math.max(0, this.story.characterIndex - 1))
-        return portion
+        if ( this.story.lineIndex < this.story.lines.length ) {
+          return lastLine.slice(0, Math.max(0, this.story.characterIndex - 1))
+        }
+        else {
+          // Special handling if we're on the last line
+          return lastLine
+        }
       },
-      currentPortion() {
-        return ''
-      },
-      lastLineUnwrittenPortion() {
+      lastLineUnwrittenPortion(): string {
         const lastLine = this.lines.slice(-1)[0]
-        const portion = lastLine.slice(Math.max(0, this.story.characterIndex - 1), lastLine.length)
-        return portion
+        if ( this.story.lineIndex < this.story.lines.length ) {
+          return lastLine.slice(Math.max(0, this.story.characterIndex - 1), lastLine.length)
+        }
+        else {
+          // Special handling if we're on the last line
+          return ''
+        }
       }
     },
-  }
-  </script>
+  })
+</script>
   
-  <style scoped>
+<style scoped>
   .static-crawl-container {
     position: absolute;
     perspective: 250px;
     width: 640px;
     left: 0px;
     top: 400px;
-    height: 100px; /* Adjust based on your design */
+    height: 100px;
     overflow: hidden;
     position: relative;
-    background-color: black; /* Optional */
   }
   
   .static-crawl-content {
@@ -65,9 +73,9 @@
     bottom: 0;
     transform: rotateX(50deg);
     transform-origin: bottom;
-    color: #ffffff;   /*#feda4a;*/
+    color: #ffffff;   
     font-family: 'DotGothic16', 'VT323', 'Roboto', 'Helvetica', 'Arial', sans-serif;
-    font-size: 30px; /* Adjust based on your design */
+    font-size: 30px; 
     white-space: nowrap;
   }
 
@@ -85,9 +93,4 @@
     opacity: 0.25;
   }
 
-  .current-portion {
-    background-color: #777777;
-    display: inline-block;
-  }
-
-  </style>
+</style>

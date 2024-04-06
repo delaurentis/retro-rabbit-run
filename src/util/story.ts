@@ -2,13 +2,13 @@ import { Story } from '../data/types'
 import { stories } from '../data/stories'
 import { textToMorseArray } from './morse'
 
-export const createStory = (): Story => {
+export const createStory = (providedLines: string[] | undefined): Story => {
   
   // Randomly pick a story from the list
   const paragraphs: string[] = stories[Math.floor(Math.random() * stories.length)]
 
   // Word wrap the lines into shorter lines
-  const lines = paragraphs.flatMap(paragraph => wordWrap(paragraph, 32))
+  const lines = providedLines || paragraphs.flatMap(paragraph => wordWrap(paragraph, 32))
 
   // Initialize our data
   const story = {
@@ -22,10 +22,10 @@ export const createStory = (): Story => {
   return story
 }
 
-type SkipOptions = {
-  skip: string[]
-}
+// These are characters we'll skip
+const uninterestingCharacters = [',', '.', '!', '?', '-', '–', '=', '+', ':', ';', '_', '+', '(', ')' ]
 
+// Get the next character from the story (unfiltered)
 export const nextCharacterFromStory = (story: Story): string | undefined => {
 
   // Start our values appropriately if they're not already set
@@ -58,11 +58,11 @@ export const nextCharacterFromStory = (story: Story): string | undefined => {
 }
 
 // Get the next character, but skip certain characters we don't want to make them type
-export const nextCharacterFromStoryExcept = (story: Story, options: SkipOptions): string | undefined => {
+export const nextInterestingCharacterFromStory = (story: Story): string | undefined => {
   let currentCharacter: string | undefined;
   do {
     currentCharacter = nextCharacterFromStory(story);
-  } while (currentCharacter && options.skip.includes(currentCharacter));
+  } while (currentCharacter && uninterestingCharacters.includes(currentCharacter));
   
   return currentCharacter;
 }

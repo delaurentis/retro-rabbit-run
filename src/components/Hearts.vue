@@ -1,35 +1,35 @@
 <!-- HTML --> 
 <!-- Structure: Where does everything go? -->
 <template>
-    <div class="hearts">
-      <div class="hearts-container">
-        <heart key="heart1" :quarters="Math.max(Math.min((this.hearts * 4), 4), 0)"/>
-        <heart key="heart2" :quarters="Math.max(Math.min((this.hearts * 4) - 4, 4), 0)"/>
-        <heart key="heart3" :quarters="Math.max(Math.min((this.hearts * 4) - 8, 4), 0)"/>
-      </div>
+  <div class="hearts">
+    <div class="hearts-container">
+      <heart key="heart1" :quarters="Math.max(Math.min((this.hearts * 4), 4), 0)"/>
+      <heart key="heart2" :quarters="Math.max(Math.min((this.hearts * 4) - 4, 4), 0)"/>
+      <heart key="heart3" :quarters="Math.max(Math.min((this.hearts * 4) - 8, 4), 0)"/>
     </div>
-  </template>
+  </div>
+</template>
   
-  <!-- JavaScript --> 
-  <!-- Functionality: What does it do? -->
-  <script>
-  
+<!-- JavaScript --> 
+<!-- Functionality: What does it do? -->
+<script lang="ts">
+  import { defineComponent } from 'vue';
   import Heart from './Heart.vue'
   
-  export default {
+  export default defineComponent({
     components: {
       'heart': Heart
     },
     props: {
-      hearts: Number
+      hearts: { type: Number, required: true }
     }
-  }
+  })
   
-  </script>
+</script>
   
-  <!-- CSS --> 
-  <!-- Style: How does it look? -->
-  <style scoped>
+<!-- CSS --> 
+<!-- Style: How does it look? -->
+<style scoped>
   .hearts {
     position: absolute;
     top: 15px;
@@ -43,4 +43,4 @@
     display: block;
   }
 
-  </style>
+</style>

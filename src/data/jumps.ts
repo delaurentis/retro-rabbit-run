@@ -1,4 +1,4 @@
-import { JumpLibrary } from "./types";
+import { JumpLibrary } from "./types"
 
 export const jumps: JumpLibrary = { 
   small: {
