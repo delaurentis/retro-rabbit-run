@@ -4,6 +4,7 @@ import { generalConstants } from './constants'
 export const rabbit: Hero = {
   sprite: {
     type: 'hero',
+    image: 'hero',
     frame: 0,
     color: 'clear', 
     state: 'running',

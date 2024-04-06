@@ -10,20 +10,23 @@
   
 <!-- JavaScript --> 
 <!-- Functionality: What does it do? -->
-<script>
+<script lang="ts">
+  import { defineComponent } from 'vue'
   import Sprite from './Sprite.vue'
+  import { Sprite as SpriteType } from '../data/types'
 
-  export default {
+  export default defineComponent({
     components: {
       'sprite': Sprite
     },
     props: {
-      quarters: Number
+      quarters: { type: Number, required: true }
     },
     computed: {
-      sprite() {
+      sprite(): SpriteType {
         return {
           type: 'heart',
+          image: 'heart',
           state: `${Math.ceil(this.quarters)}`,
           x: 0,
           y: 0,
@@ -33,7 +36,7 @@
         }
       }
     }
-  }
+  })
   
 </script>
   

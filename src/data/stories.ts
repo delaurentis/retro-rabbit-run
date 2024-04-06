@@ -1,5 +1,3 @@
-import { Story } from './types';
-
 export const stories: string[][] = [
   [
     "Once upon a time there were four little Rabbits, and their names were — Flopsy, Mopsy, Cotton-tail, and Peter.",

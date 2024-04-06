@@ -2,6 +2,7 @@
 // Used by our display and collision detection systems
 export type Sprite = {
   type: string
+  image?: string
   x: number
   y: number
   z?: number
@@ -21,7 +22,7 @@ export type Sprite = {
   text?: string
   fontSize?: number
   actionToTrigger?: string
-};
+}
 
 // Define a single step in the dance of a sprite
 export type SpriteStep = {
@@ -40,6 +41,7 @@ export type SpriteDance = {
 
 // Used to pre-define some info about all sprites of this type 
 export type SpriteDef = {
+  image?: string
   width: number
   height: number
   x?: number
@@ -53,7 +55,7 @@ export type SpriteDef = {
   opacity?: number
   dance?: SpriteDance
   actionToTrigger?: string
-};
+}
 
 // Our library of sprites
 export type SpriteLibrary = {
@@ -72,7 +74,7 @@ export type SpriteRef = {
   frame?: number 
   state?: string
   actionToTrigger?: string
-};
+}
 
 export type Story = {
   currentCharacter?: string
@@ -104,15 +106,16 @@ export type Tile = {
 
 // A set of tiles that can be chosen from for a specific morse code character
 export type TileSet = {
-  choices: Tile[];
+  choices: Tile[]
 }
 
 // Our library of tiles for all morse code characters
 export type TileLibrary = {
-  '.': TileSet;
-  '-': TileSet;
-  ' ': TileSet;
-  '💀': TileSet;
+  '.': TileSet
+  '-': TileSet
+  ' ': TileSet
+  '💀': TileSet
+  '🏆': TileSet
 }
 
 // Constants for realistic jumping

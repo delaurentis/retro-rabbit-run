@@ -18,7 +18,7 @@ export const collideHeroAndSprites = (heroSprite: Sprite, sprites: Sprite[], opt
   // If there are collisions, handle them
   const heroSpriteSheet: HTMLImageElement = document.getElementById('hero-sprite-sheet') as HTMLImageElement
   if (heroSpriteSheet) {
-    heroSpriteSheet.src = `./${heroSprite.type}-${heroSprite.state}.png`
+    heroSpriteSheet.src = `./${heroSprite.image}-${heroSprite.state}.png`
   }
   const snapshotCanvas: HTMLCanvasElement = document.getElementById('collision-canvas') as HTMLCanvasElement
   const canvas: HTMLCanvasElement = document.createElement('canvas')
@@ -42,7 +42,7 @@ export const collideHeroAndSprites = (heroSprite: Sprite, sprites: Sprite[], opt
     ctx.drawImage(heroSpriteSheet, (Math.ceil(heroSprite.frame || 0) % 16) * 132, 0, 132, 108, 0, 0, 132, 108);
     
     // Draw the sprite we are testing for collision
-    collidingSpriteSheet.src = `./${sprite.type}-${sprite.state}.png`
+    collidingSpriteSheet.src = `./${sprite.image}-${sprite.state}.png`
     ctx.drawImage(collidingSpriteSheet, 
       (Math.ceil(sprite.frame || 0)) * sprite.width, 
       0, 
