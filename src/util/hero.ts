@@ -6,16 +6,16 @@ export const createHero = (hero: Hero): Hero => {
   return { ...hero, sprite: { ...hero.sprite } }
 }
 
-export const advanceHero = (hero: Hero): void => {
+export const advanceHero = (hero: Hero, ticks: number): void => {
 
   // We always advance the state of the hero
   hero.sprite.stateTicks = (hero.sprite.stateTicks || 0) + 1
 
   // Always advance our current animation
-  hero.sprite.frame += hero.framesPerTick
+  hero.sprite.frame += hero.framesPerTick * ticks
 
   // Always run forward
-  hero.sprite.x += generalConstants.speedInPixelsPerTick
+  hero.sprite.x += generalConstants.speedInPixelsPerTick * ticks
 
   // Handle invicibility 
   hero.sprite.injuredTicks = (hero.sprite.injuredTicks || 0)
@@ -93,7 +93,7 @@ export const askHeroToJump = (hero: Hero): boolean => {
 }
 
 // Continue processing any jump
-export const jumpHeroAndDetectDash = (hero: Hero, jumpButtonPressed: boolean): boolean => {
+export const jumpHeroAndDetectDash = (hero: Hero, jumpButtonPressed: boolean, ticks: number): boolean => {
 
   // If they are jumping then change the Y
   if ( hero.sprite.state === 'jumping' ) {
@@ -107,7 +107,7 @@ export const jumpHeroAndDetectDash = (hero: Hero, jumpButtonPressed: boolean): b
 
       // Our X and Y value will change based on a pre-computed curve
       hero.sprite.y = hero.baseY - (constantsToUse.yScale * constantsToUse.yCurve[Math.ceil(hero.sprite.frame)])
-      hero.sprite.x += (constantsToUse.xScale * constantsToUse.xCurve[Math.ceil(hero.sprite.frame)])
+      hero.sprite.x += (constantsToUse.xScale * constantsToUse.xCurve[Math.ceil(hero.sprite.frame)] * ticks)
 
       // See if the jump "button" is still pressed (whatever keys that maps to)
       if ( jumpButtonPressed ) {
@@ -137,11 +137,11 @@ export const isHeroJumping = (hero: Hero, jumpType: string): boolean => {
 
 // If the hero got injured, we make them invincible for a while
 // This method will eventually turn that off
-export const manageHeroInvincibility = (hero: Hero): void => {
+export const manageHeroInvincibility = (hero: Hero, ticks: number): void => {
   // Handle invicibility 
   hero.sprite.injuredTicks = (hero.sprite.injuredTicks || 0)
   if ( hero.sprite.injuredTicks > 0 ) {
-    hero.sprite.injuredTicks -= 1
+    hero.sprite.injuredTicks -= ticks
     hero.sprite.injured = true
   }
   else {
