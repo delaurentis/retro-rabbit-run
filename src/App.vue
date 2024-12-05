@@ -75,17 +75,27 @@
     methods: {
       gameLoop() {
 
+        // Get the current time
+        const currentTime: number = performance.now()
+
+        // Calculate the delta time
+        const deltaTime: number = currentTime - this.lastFrameTime
+        this.lastFrameTime = currentTime
+        
+        // Compute the number of ticks (30 ticks per second)
+        const ticks: number = deltaTime > 0 ? deltaTime / 1000 * 60 : 1
+
         // Move our hero forward
-        advanceHero(this.hero)
+        advanceHero(this.hero, ticks)
 
         // Check for collisions
         this.handleCollisions()
 
         // Handle any jumps
-        this.handleJumping()
+        this.handleJumping(ticks)
 
         // Handle moving sprites
-        this.handleDancingSprites()
+        this.handleDancingSprites(ticks)
 
         // Generate sprites and terrain
         this.generateTerrain()
@@ -137,15 +147,15 @@
           }
         })
       },
-      handleJumping() {
-        const isDashJustStarted: boolean = jumpHeroAndDetectDash(this.hero, this.jumpButtonPressed)
+      handleJumping(ticks: number) {
+        const isDashJustStarted: boolean = jumpHeroAndDetectDash(this.hero, this.jumpButtonPressed, ticks)
         if ( isDashJustStarted ) {
           this.toneGenerator.playDash()
         }
       },
-      handleDancingSprites() {
+      handleDancingSprites(ticks: number) {
         this.sprites.filter(sprite => sprite.dance !== undefined ).forEach(sprite => {
-          danceSprite(sprite)
+          danceSprite(sprite, ticks)
         })
       },
       generateTiles() {

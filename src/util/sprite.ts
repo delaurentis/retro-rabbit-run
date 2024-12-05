@@ -1,13 +1,13 @@
 import { Sprite, SpriteDance, SpriteStep } from '../data/types'
 
 // Move a sprite along a path, if it has one
-export const danceSprite = (sprite: Sprite): void => {
+export const danceSprite = (sprite: Sprite, ticks: number): void => {
   if ( sprite.dance ) {
 
     // Advance in the dance
     sprite.dance.stepIndex = (sprite.dance.stepIndex || 0)
-    sprite.dance.stepTicks = (sprite.dance.stepTicks || 0) + 1
-    sprite.dance.danceTicks = (sprite.dance.danceTicks || 0) + 1
+    sprite.dance.stepTicks = (sprite.dance.stepTicks || 0) + ticks
+    sprite.dance.danceTicks = (sprite.dance.danceTicks || 0) + ticks
 
     // Get the current step of the dance
     const currentStep: SpriteStep = sprite.dance.steps[sprite.dance.stepIndex]
