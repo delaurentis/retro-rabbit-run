@@ -8,12 +8,12 @@
     :story="story"
   />
   <button class="cover-button"></button>
+  <div class="source-link-container"><SourceLink repo-url="https://github.com/delaurentis/retro-rabbit-run" /></div>
   <div class="container">
     <img id="hero-sprite-sheet" style="position: absolute; left: 0px; display: none;"/>
     <img id="colliding-sprite-sheet" style="position: absolute; left: 0px; display: none;"/>
     <canvas id="collision-canvas" width="132" height="108"/>
   </div>
-  
 </template>
 
 <!-- JavaScript --> 
@@ -36,6 +36,7 @@
   import { Hero as HeroType } from '../data/types'
   import { Story as StoryType } from '../data/types'
   import { Tile as TileType } from '../data/types'
+  import SourceLink from './components/SourceLink.vue'
 
   // Step 1: Define an interface for your data structure
   interface AppData {
@@ -52,7 +53,8 @@
   // Options API
   export default defineComponent({
     components: {
-      'stage': Stage
+      'stage': Stage,
+      SourceLink
     },
     props: {},
     data(): AppData {
@@ -347,6 +349,17 @@
     margin: 0;
     font-size: 40px;
     font-weight: 300;
+  }
+
+  .source-link-container {
+    margin-top: 20px;
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    .source-link-container {
+      display: flex;
+    }
   }
 
   @media only screen and (max-width: 480px) {
