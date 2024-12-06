@@ -1,14 +1,16 @@
 <!-- HTML --> 
 <!-- Structure: Where does everything go? -->
 <template>
-  <h1 class="title">Retro Rabbit</h1>
+  <div class="header">
+    <h1 class="title">Retro Rabbit</h1>
+    <SourceLink repo-url="https://github.com/delaurentis/retro-rabbit-run" /> 
+  </div>
   <stage 
     :hero="hero"
     :sprites="allSprites" 
     :story="story"
   />
   <button class="cover-button"></button>
-  <div class="source-link-container"><SourceLink repo-url="https://github.com/delaurentis/retro-rabbit-run" /></div>
   <div class="container">
     <img id="hero-sprite-sheet" style="position: absolute; left: 0px; display: none;"/>
     <img id="colliding-sprite-sheet" style="position: absolute; left: 0px; display: none;"/>
@@ -347,19 +349,19 @@
   h1 {
     color: white;
     margin: 0;
-    font-size: 40px;
+    font-size: 32px;
     font-weight: 300;
   }
 
-  .source-link-container {
-    margin-top: 20px;
-    display: none;
-  }
-
-  @media (min-width: 768px) {
-    .source-link-container {
-      display: flex;
-    }
+  .header {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    justify-items: center;
+    margin-bottom: 16px;
   }
 
   @media only screen and (max-width: 480px) {
@@ -368,6 +370,9 @@
     }
     #app {
       gap: 0px;
+    }
+    .header {
+      display: none;
     }
     h1 {
       display: none;
@@ -380,6 +385,9 @@
     }
     #app {
       gap: 0px;
+    }
+    .header {
+      display: none;
     }
     h1 {
       display: none;
