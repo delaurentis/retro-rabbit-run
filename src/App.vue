@@ -1,7 +1,10 @@
 <!-- HTML --> 
 <!-- Structure: Where does everything go? -->
 <template>
-  <h1 class="title">Retro Rabbit</h1>
+  <div class="header">
+    <h1 class="title">Retro Rabbit</h1>
+    <SourceLink repo-url="https://github.com/delaurentis/retro-rabbit-run" /> 
+  </div>
   <stage 
     :hero="hero"
     :sprites="allSprites" 
@@ -13,7 +16,6 @@
     <img id="colliding-sprite-sheet" style="position: absolute; left: 0px; display: none;"/>
     <canvas id="collision-canvas" width="132" height="108"/>
   </div>
-  
 </template>
 
 <!-- JavaScript --> 
@@ -36,6 +38,7 @@
   import { Hero as HeroType } from '../data/types'
   import { Story as StoryType } from '../data/types'
   import { Tile as TileType } from '../data/types'
+  import SourceLink from './components/SourceLink.vue'
 
   // Step 1: Define an interface for your data structure
   interface AppData {
@@ -52,7 +55,8 @@
   // Options API
   export default defineComponent({
     components: {
-      'stage': Stage
+      'stage': Stage,
+      SourceLink
     },
     props: {},
     data(): AppData {
@@ -345,8 +349,19 @@
   h1 {
     color: white;
     margin: 0;
-    font-size: 40px;
+    font-size: 32px;
     font-weight: 300;
+  }
+
+  .header {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    justify-items: center;
+    margin-bottom: 16px;
   }
 
   @media only screen and (max-width: 480px) {
@@ -355,6 +370,9 @@
     }
     #app {
       gap: 0px;
+    }
+    .header {
+      display: none;
     }
     h1 {
       display: none;
@@ -367,6 +385,9 @@
     }
     #app {
       gap: 0px;
+    }
+    .header {
+      display: none;
     }
     h1 {
       display: none;
